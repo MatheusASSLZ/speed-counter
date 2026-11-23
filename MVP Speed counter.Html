@@ -1,225 +1,299 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speed counter</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Organize lançamentos, acompanhe seu saldo e exporte um relatório mensal no Speed Counter.">
+  <meta name="theme-color" content="#1b122b">
+  <title>Speed Counter</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./static/styles.css">
+  <script defer src="./static/app.bundle.js"></script>
 </head>
 <body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand" aria-label="Speed Counter">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span>Speed <strong>Counter</strong></span>
+      </div>
+      <nav id="app-nav" class="nav" aria-label="Seções do Speed Counter">
+        <button type="button" class="nav-button" data-view="cadastro" aria-controls="view-cadastro" aria-current="page">
+          <span class="nav-icon nav-icon-account" aria-hidden="true"></span>Conta e lançamentos
+        </button>
+        <button type="button" class="nav-button" data-view="saldo" data-feature="saldo" aria-controls="view-saldo" disabled hidden>
+          <span class="nav-icon nav-icon-balance" aria-hidden="true"></span>Saldo
+        </button>
+        <button type="button" class="nav-button" data-view="relatorio" data-feature="relatorio" aria-controls="view-relatorio" disabled hidden>
+          <span class="nav-icon nav-icon-report" aria-hidden="true"></span>Relatório mensal
+        </button>
+      </nav>
+    </aside>
 
-<form id="form-conta">
-  <p>
-    <label for="nome-conta">Nome da conta</label>
-    <input id="nome-conta" name="nome-conta" type="text"
-           placeholder="Ex.: Conta do dia a dia" required>
-  </p>
+    <main id="conteudo" class="main-content" tabindex="-1">
+      <p id="app-feedback" class="feedback app-feedback" role="status" aria-live="polite" hidden></p>
+      <noscript><p class="feedback" role="alert">Ative o JavaScript para cadastrar lançamentos e calcular o saldo.</p></noscript>
 
-  <p>
-    <label for="tipo-conta">Tipo de conta</label>
-    <select id="tipo-conta" name="tipo-conta" required>
-      <option value="">Escolha o tipo de conta</option>
-      <option value="digital">Conta digital</option>
-      <option value="corrente">Conta-corrente</option>
-      <option value="dinheiro">Dinheiro</option>
-      <option value="poupanca">Poupança</option>
-    </select>
-  </p>
+      <section id="view-cadastro" class="view" aria-labelledby="registration-title">
+        <header class="view-header">
+          <div>
+            <h1 id="registration-title">Conta e lançamentos</h1>
+            <p>Configure a conta usada para registrar suas receitas e despesas.</p>
+          </div>
+        </header>
 
-  <p>
-    <label for="saldo-inicial">Saldo inicial</label>
-    <input id="saldo-inicial" name="saldo-inicial" type="text"
-           inputmode="decimal" placeholder="0,00" required>
-  </p>
+        <div id="account-form-area" class="account-layout">
+          <section class="card form-card" aria-labelledby="account-form-title">
+            <div class="section-heading">
+              <h2 id="account-form-title">Configurar conta principal</h2>
+              <p>Informe o valor que você já tem antes de começar a lançar.</p>
+            </div>
+            <form id="account-form" class="field-grid">
+              <div class="field full-width">
+                <label for="account-form-name">Nome da conta</label>
+                <input id="account-form-name" name="nome" type="text" maxlength="60" placeholder="Ex.: Conta do dia a dia" autocomplete="off" required>
+              </div>
+              <div class="field">
+                <label for="account-form-type">Tipo de conta</label>
+                <select id="account-form-type" name="tipo_conta" required>
+                  <option value="digital" selected>Conta digital</option>
+                  <option value="corrente">Conta-corrente</option>
+                  <option value="poupanca">Poupança</option>
+                  <option value="carteira">Carteira</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="account-form-initial">Saldo inicial (R$)</label>
+                <input id="account-form-initial" name="saldo_inicial" type="text" inputmode="decimal" autocomplete="off" maxlength="24" value="0,00" required>
+              </div>
+              <p id="account-feedback" class="feedback full-width" role="status" aria-live="polite" hidden></p>
+              <div class="form-actions full-width">
+                <button class="button button-primary" type="submit">Salvar conta</button>
+                <button type="button" id="cancel-edit-account" class="button button-secondary" hidden>Cancelar</button>
+              </div>
+            </form>
+          </section>
 
-  <button type="submit">Salvar conta</button>
-</form>
+          <aside class="account-preview" aria-labelledby="account-example-title">
+            <div class="preview-account">
+              <span class="preview-symbol" aria-hidden="true">S</span>
+              <div>
+                <span class="preview-label">Saldo inicial de exemplo</span>
+                <strong class="preview-value">R$ 50,00</strong>
+              </div>
+            </div>
+            <div class="preview-content">
+              <h2 id="account-example-title">Praticar com janeiro</h2>
+              <p>Comece com a bolsa recebida, o aluguel pago e a internet pendente do cenário da equipe.</p>
+              <button type="button" id="load-demo" class="button button-secondary">Carregar exemplo</button>
+            </div>
+          </aside>
+        </div>
 
-<p id="mensagem-conta" role="status"></p>
+        <section id="account-summary" class="account-summary" aria-label="Conta principal configurada" hidden>
+          <span class="account-symbol" aria-hidden="true">S</span>
+          <div>
+            <p class="account-label">Conta principal</p>
+            <h2 id="account-name"></h2>
+            <p id="account-type"></p>
+          </div>
+          <button type="button" id="edit-account" class="button button-secondary">Configurar conta</button>
+        </section>
 
-<h2>Novo lançamento</h2>
+        <div id="registration-content" class="registration-layout" hidden>
+          <div id="registration-slot">
+            <section id="transaction-form-block" class="card form-card" aria-labelledby="transaction-title">
+              <div class="section-heading">
+                <h2 id="transaction-title">Novo lançamento</h2>
+                <p>Escolha o tipo e registre o valor, a data e a situação.</p>
+              </div>
+              <form id="transaction-form" class="field-grid">
+                <fieldset class="entry-type full-width">
+                  <legend>Tipo de lançamento</legend>
+                  <label><input type="radio" name="tipo" value="receita"> <span>Receita</span></label>
+                  <label><input type="radio" name="tipo" value="despesa" checked> <span>Despesa</span></label>
+                </fieldset>
+                <div class="field full-width">
+                  <label for="transaction-description">Descrição</label>
+                  <input id="transaction-description" name="descricao" type="text" maxlength="100" placeholder="Ex.: Compra na farmácia" autocomplete="off" required>
+                </div>
+                <div class="field">
+                  <label for="transaction-amount">Valor (R$)</label>
+                  <input id="transaction-amount" name="valor" type="text" inputmode="decimal" maxlength="24" placeholder="0,00" autocomplete="off" required>
+                </div>
+                <div class="field">
+                  <label for="transaction-date">Data</label>
+                  <input id="transaction-date" name="data" type="date" required>
+                </div>
+                <div id="category-field" class="field">
+                  <label for="transaction-category">Categoria</label>
+                  <select id="transaction-category" name="categoria" required>
+                    <option value="">Escolha a categoria</option>
+                  </select>
+                  <button id="category-toggle" class="button-link" type="button" aria-controls="category-editor" aria-expanded="false">Criar categoria</button>
+                </div>
+                <div class="field">
+                  <label for="transaction-status">Situação</label>
+                  <select id="transaction-status" name="situacao" required>
+                    <option value="realizado">Paga</option>
+                    <option value="pendente">Pendente</option>
+                  </select>
+                </div>
+                <p id="transaction-feedback" class="feedback full-width" role="status" aria-live="polite" hidden></p>
+                <div class="form-actions full-width">
+                  <button class="button button-primary" type="submit">Salvar lançamento</button>
+                </div>
+              </form>
 
-<form id="form-lancamento">
-  <fieldset>
-    <legend>Tipo de lançamento</legend>
+              <div id="category-editor" class="category-editor" hidden>
+                <form id="category-form" class="field-grid">
+                  <div class="field full-width">
+                    <label for="new-category-name">Nome da nova categoria</label>
+                    <div class="inline-form">
+                      <input id="new-category-name" name="nova_categoria" type="text" maxlength="40" placeholder="Ex.: Educação" autocomplete="off" required>
+                      <button type="submit" class="button button-secondary">Adicionar</button>
+                    </div>
+                  </div>
+                  <p id="category-feedback" class="feedback full-width" role="status" aria-live="polite" hidden></p>
+                </form>
+              </div>
+            </section>
+          </div>
+          <section class="card list-card" aria-labelledby="recent-title">
+            <div class="section-heading"><h2 id="recent-title">Últimos lançamentos</h2></div>
+            <p id="recent-empty" class="empty-state">Os lançamentos salvos aparecerão aqui.</p>
+            <ul id="recent-list" class="record-list"></ul>
+          </section>
+        </div>
+      </section>
 
-    <label>
-      <input type="radio" name="tipo" value="receita">
-      Receita
-    </label>
+      <section id="view-saldo" class="view" aria-labelledby="balance-title" hidden>
+        <header class="view-header">
+          <div><h1 id="balance-title">Saldo</h1><p>Confira o disponível e acompanhe o efeito de cada movimentação.</p></div>
+        </header>
+        <div class="balance-grid">
+          <section class="balance-hero" aria-labelledby="balance-total-title">
+            <div class="balance-hero-content">
+              <h2 id="balance-total-title">Saldo atual</h2>
+              <output id="balance-total" class="balance-amount" aria-labelledby="balance-total-title">R$ 0,00</output>
+              <p>Saldo inicial + receitas recebidas − despesas pagas</p>
+            </div>
+          </section>
+          <div class="balance-actions">
+            <button class="metric-button" type="button" data-movement-type="receita" aria-pressed="true" aria-controls="dashboard-list">
+              <span class="metric-label">Receitas recebidas</span>
+              <strong id="income-total">R$ 0,00</strong>
+              <span class="metric-action">Ver receitas</span>
+            </button>
+            <button class="metric-button" type="button" data-movement-type="despesa" aria-pressed="false" aria-controls="dashboard-list">
+              <span class="metric-label">Despesas pagas</span>
+              <strong id="expense-total">R$ 0,00</strong>
+              <span class="metric-action">Ver despesas</span>
+            </button>
+          </div>
+        </div>
 
-    <label>
-      <input type="radio" name="tipo" value="despesa" checked>
-      Despesa
-    </label>
-  </fieldset>
+        <section class="card list-card dashboard-records" aria-labelledby="dashboard-list-title">
+          <div class="section-heading"><h2 id="dashboard-list-title">Receitas</h2></div>
+          <p id="dashboard-empty" class="empty-state">Os lançamentos deste tipo aparecerão aqui.</p>
+          <ul id="dashboard-list" class="record-list"></ul>
+        </section>
 
-  <p>
-    <label for="lancamento-descricao">Descrição</label>
-    <input id="lancamento-descricao" name="descricao" type="text"
-           placeholder="Ex.: Compra na farmácia">
-  </p>
+        <section class="demo-section" aria-labelledby="demo-title">
+          <div class="section-heading"><h2 id="demo-title">Demonstração de lançamentos</h2><p>Cadastre uma movimentação e confira a diferença no saldo.</p></div>
+          <div class="demo-layout">
+            <div id="demo-slot"></div>
+            <section id="balance-change" class="card balance-change" aria-labelledby="balance-change-title" aria-live="polite" hidden>
+              <div class="section-heading"><h3 id="balance-change-title">Efeito da última movimentação</h3></div>
+              <dl class="balance-breakdown">
+                <div><dt>Saldo anterior</dt><dd id="previous-balance">R$ 0,00</dd></div>
+                <div><dt id="balance-effect-label">Efeito</dt><dd id="balance-effect">R$ 0,00</dd></div>
+                <div><dt>Novo saldo</dt><dd id="new-balance">R$ 0,00</dd></div>
+              </dl>
+            </section>
+          </div>
+        </section>
+      </section>
 
-  <p>
-    <label for="lancamento-valor">Valor (R$)</label>
-    <input id="lancamento-valor" name="valor" type="text"
-           inputmode="decimal" placeholder="0,00" required>
-  </p>
+      <section id="view-relatorio" class="view" aria-labelledby="report-title" hidden>
+        <header class="view-header report-header">
+          <div>
+            <h1 id="report-title">Relatório mensal</h1>
+            <p id="report-period">Selecione um mês para consultar as movimentações.</p>
+          </div>
+          <div class="report-actions">
+            <div class="field">
+              <label for="report-month">Mês do relatório</label>
+              <input id="report-month" type="month" required>
+            </div>
+            <button type="button" id="export-csv" class="button button-primary">Baixar CSV</button>
+          </div>
+        </header>
+        <p id="report-feedback" class="feedback" role="status" aria-live="polite" hidden></p>
 
-  <p>
-    <label for="lancamento-data">Data</label>
-    <input id="lancamento-data" name="data" type="date" required>
-  </p>
+        <dl class="report-metrics" aria-label="Totais do mês" aria-live="polite">
+          <div><dt>Receitas recebidas</dt><dd id="report-income">R$ 0,00</dd></div>
+          <div><dt>Despesas pagas</dt><dd id="report-expense">R$ 0,00</dd></div>
+          <div class="report-result"><dt>Resultado do mês</dt><dd id="report-net">R$ 0,00</dd></div>
+        </dl>
 
-  <p>
-    <label for="lancamento-categoria">Categoria da despesa</label>
-    <select id="lancamento-categoria" name="categoria">
-      <option value="">Escolha uma categoria</option>
-      <option value="alimentacao">Alimentação</option>
-      <option value="moradia">Moradia</option>
-      <option value="saude">Saúde</option>
-      <option value="transporte">Transporte</option>
-    </select>
-  </p>
+        <div class="report-details">
+          <section class="card list-card" aria-labelledby="report-categories-title">
+            <div class="section-heading"><h2 id="report-categories-title">Despesas pagas por categoria</h2></div>
+            <ul id="report-category-list" class="record-list"></ul>
+            <p id="report-category-empty" class="empty-state">Nenhuma despesa paga neste mês.</p>
+          </section>
+          <section class="card list-card" aria-labelledby="report-pending-title">
+            <div class="section-heading pending-heading">
+              <h2 id="report-pending-title">Despesas pendentes</h2>
+              <strong id="report-pending-total">R$ 0,00</strong>
+            </div>
+            <ul id="report-pending-list" class="record-list"></ul>
+            <p id="report-pending-empty" class="empty-state">Nenhuma despesa pendente neste mês.</p>
+          </section>
+        </div>
 
-  <p>
-    <label for="lancamento-situacao">Situação</label>
-    <select id="lancamento-situacao" name="situacao">
-      <option value="pendente">Pendente</option>
-      <option value="realizado">Já recebi ou paguei</option>
-    </select>
-  </p>
+        <section class="card list-card report-history" aria-labelledby="report-history-title">
+          <div class="section-heading movements-heading">
+            <div>
+              <h2 id="report-history-title">Histórico do mês</h2>
+              <p>O CSV inclui todos os lançamentos do mês selecionado.</p>
+            </div>
+            <div class="field">
+              <label for="report-category">Filtrar categoria</label>
+              <select id="report-category"><option value="">Todas as categorias</option></select>
+            </div>
+          </div>
+          <div class="table-scroll" role="region" aria-label="Tabela de movimentações" tabindex="0">
+            <table class="data-table" aria-labelledby="report-history-title">
+              <thead><tr><th scope="col">Data</th><th scope="col">Tipo</th><th scope="col">Lançamento</th><th scope="col">Categoria</th><th scope="col">Situação</th><th scope="col" class="amount">Valor</th></tr></thead>
+              <tbody id="report-movements"></tbody>
+            </table>
+          </div>
+          <p id="report-empty" class="empty-state">Nenhuma movimentação para este filtro.</p>
+        </section>
+      </section>
+    </main>
+  </div>
 
-  <button type="submit">Salvar lançamento</button>
-</form>
-
-<p id="mensagem-lancamento" role="status"></p>
-
-<script>
-  const formulario = document.getElementById("form-conta");
-  const mensagem = document.getElementById("mensagem-conta");
-
-  formulario.addEventListener("submit", function (evento) {
-    evento.preventDefault();
-
-    const campos = new FormData(formulario);
-    const nome = campos.get("nome-conta").trim();
-    const saldoInformado = campos.get("saldo-inicial").trim();
-
-    if (!nome) {
-      mensagem.textContent = "Informe o nome da conta.";
-      return;
-    }
-
-    const partes = saldoInformado.match(/^(-?)(\d+)(?:[,.](\d{1,2}))?$/);
-
-    if (!partes) {
-      mensagem.textContent = "Informe um saldo válido, como 50,00.";
-      return;
-    }
-
-    const [, sinal, reais, decimais = ""] = partes;
-    const saldoEmCentavos = Number(sinal + reais + decimais.padEnd(2, "0"));
-
-    if (!Number.isSafeInteger(saldoEmCentavos)) {
-      mensagem.textContent = "O saldo informado é alto demais.";
-      return;
-    }
-
-    const conta = {
-      nome: nome,
-      tipo: campos.get("tipo-conta"),
-      saldoInicialCentavos: saldoEmCentavos
-    };
-
-    try {
-      localStorage.setItem("speed-counter-conta", JSON.stringify(conta));
-      mensagem.textContent = "Conta salva neste navegador.";
-    } catch {
-      mensagem.textContent = "Não foi possível salvar a conta neste navegador.";
-    }
-  });
-
-  function carregarConta() {
-  try {
-    const textoSalvo = localStorage.getItem("speed-counter-conta");
-
-    if (textoSalvo === null) {
-      return;
-    }
-
-    const conta = JSON.parse(textoSalvo);
-    const centavos = conta.saldoInicialCentavos;
-    const digitos = String(Math.abs(centavos)).padStart(3, "0");
-    const sinal = centavos < 0 ? "-" : "";
-    const saldo = sinal + digitos.slice(0, -2) + "," + digitos.slice(-2);
-
-    formulario.elements.namedItem("nome-conta").value = conta.nome;
-    formulario.elements.namedItem("tipo-conta").value = conta.tipo;
-    formulario.elements.namedItem("saldo-inicial").value = saldo;
-
-    mensagem.textContent = "Conta carregada.";
-  } catch {
-    mensagem.textContent = "Não foi possível carregar a conta salva.";
-  }
-}
-
-carregarConta();
-
-const formLancamento = document.getElementById("form-lancamento");
-const mensagemLancamento = document.getElementById("mensagem-lancamento");
-
-formLancamento.addEventListener("submit", function (evento) {
-  evento.preventDefault();
-
-  const campos = new FormData(formLancamento);
-  const tipo = campos.get("tipo");
-  const descricao = campos.get("descricao").trim();
-  const categoria = tipo === "despesa" ? campos.get("categoria") : "";
-
-  if (tipo === "despesa" && (!descricao || !categoria)) {
-    mensagemLancamento.textContent = "Informe a descrição e a categoria da despesa.";
-    return;
-  }
-
-  const partes = campos.get("valor").trim().match(/^(\d+)(?:[,.](\d{1,2}))?$/);
-
-  if (!partes) {
-    mensagemLancamento.textContent = "Informe um valor válido, como 32,75.";
-    return;
-  }
-
-  const [, reais, decimais = ""] = partes;
-  const valorCentavos = Number(reais + decimais.padEnd(2, "0"));
-
-  if (!Number.isSafeInteger(valorCentavos) || valorCentavos < 1) {
-    mensagemLancamento.textContent = "Informe um valor a partir de R$ 0,01.";
-    return;
-  }
-
-  const lancamento = {
-    tipo,
-    descricao,
-    categoria,
-    valorCentavos,
-    data: campos.get("data"),
-    situacao: campos.get("situacao")
-  };
-
-  try {
-    const textoSalvo = localStorage.getItem("speed-counter-lancamentos");
-    const lancamentos = JSON.parse(textoSalvo ?? "[]");
-    lancamentos.push(lancamento);
-
-    localStorage.setItem("speed-counter-lancamentos", JSON.stringify(lancamentos));
-    formLancamento.reset();
-    mensagemLancamento.textContent = "Lançamento salvo neste navegador.";
-  } catch {
-    mensagemLancamento.textContent = "Não foi possível salvar o lançamento.";
-  }
-});
-
-</script>
-
+  <dialog id="confirm-dialog" aria-labelledby="confirm-title">
+    <div class="section-heading">
+      <h2 id="confirm-title">Confirmar lançamento</h2>
+      <p id="confirm-description"></p>
+    </div>
+    <form id="confirm-form" class="field-grid">
+      <input type="hidden" name="id">
+      <div class="field full-width">
+        <label for="confirm-date">Data efetiva</label>
+        <input id="confirm-date" type="date" name="data" required>
+      </div>
+      <p id="confirm-feedback" class="feedback full-width" role="status" aria-live="polite" hidden></p>
+      <div class="form-actions full-width">
+        <button type="submit" class="button button-primary">Confirmar</button>
+        <button type="button" id="cancel-confirm" class="button button-secondary">Cancelar</button>
+      </div>
+    </form>
+  </dialog>
 </body>
-
 </html>
