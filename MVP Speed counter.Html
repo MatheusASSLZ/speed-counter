@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed counter</title>
+</head>
+<body>
+
+<form id="form-conta">
+  <p>
+    <label for="nome-conta">Nome da conta</label>
+    <input id="nome-conta" name="nome-conta" type="text"
+           placeholder="Ex.: Conta do dia a dia" required>
+  </p>
+
+  <p>
+    <label for="tipo-conta">Tipo de conta</label>
+    <select id="tipo-conta" name="tipo-conta" required>
+      <option value="">Escolha o tipo de conta</option>
+      <option value="digital">Conta digital</option>
+      <option value="corrente">Conta-corrente</option>
+      <option value="dinheiro">Dinheiro</option>
+      <option value="poupanca">Poupança</option>
+    </select>
+  </p>
+
+  <p>
+    <label for="saldo-inicial">Saldo inicial</label>
+    <input id="saldo-inicial" name="saldo-inicial" type="text"
+           inputmode="decimal" placeholder="0,00" required>
+  </p>
+
+  <button type="submit">Salvar conta</button>
+</form>
+
+<p id="mensagem-conta" role="status"></p>
+
+<h2>Novo lançamento</h2>
+
+<form id="form-lancamento">
+  <fieldset>
+    <legend>Tipo de lançamento</legend>
+
+    <label>
+      <input type="radio" name="tipo" value="receita">
+      Receita
+    </label>
+
+    <label>
+      <input type="radio" name="tipo" value="despesa" checked>
+      Despesa
+    </label>
+  </fieldset>
+
+  <p>
+    <label for="lancamento-descricao">Descrição</label>
+    <input id="lancamento-descricao" name="descricao" type="text"
+           placeholder="Ex.: Compra na farmácia">
+  </p>
+
+  <p>
+    <label for="lancamento-valor">Valor (R$)</label>
+    <input id="lancamento-valor" name="valor" type="text"
+           inputmode="decimal" placeholder="0,00" required>
+  </p>
+
+  <p>
+    <label for="lancamento-data">Data</label>
+    <input id="lancamento-data" name="data" type="date" required>
+  </p>
+
+  <p>
+    <label for="lancamento-categoria">Categoria da despesa</label>
+    <select id="lancamento-categoria" name="categoria">
+      <option value="">Escolha uma categoria</option>
+      <option value="alimentacao">Alimentação</option>
+      <option value="moradia">Moradia</option>
+      <option value="saude">Saúde</option>
+      <option value="transporte">Transporte</option>
+    </select>
+  </p>
+
+  <p>
+    <label for="lancamento-situacao">Situação</label>
+    <select id="lancamento-situacao" name="situacao">
+      <option value="pendente">Pendente</option>
+      <option value="realizado">Já recebi ou paguei</option>
+    </select>
+  </p>
+
+  <button type="submit">Salvar lançamento</button>
+</form>
+
+<p id="mensagem-lancamento" role="status"></p>
+
+<script>
+  const formulario = document.getElementById("form-conta");
+  const mensagem = document.getElementById("mensagem-conta");
+
+  formulario.addEventListener("submit", function (evento) {
+    evento.preventDefault();
+
+    const campos = new FormData(formulario);
+    const nome = campos.get("nome-conta").trim();
+    const saldoInformado = campos.get("saldo-inicial").trim();
+
+    if (!nome) {
+      mensagem.textContent = "Informe o nome da conta.";
+      return;
+    }
+
+    const partes = saldoInformado.match(/^(-?)(\d+)(?:[,.](\d{1,2}))?$/);
+
+    if (!partes) {
+      mensagem.textContent = "Informe um saldo válido, como 50,00.";
+      return;
+    }
+
+    const [, sinal, reais, decimais = ""] = partes;
+    const saldoEmCentavos = Number(sinal + reais + decimais.padEnd(2, "0"));
+
+    if (!Number.isSafeInteger(saldoEmCentavos)) {
+      mensagem.textContent = "O saldo informado é alto demais.";
+      return;
+    }
+
+    const conta = {
+      nome: nome,
+      tipo: campos.get("tipo-conta"),
+      saldoInicialCentavos: saldoEmCentavos
+    };
+
+    try {
+      localStorage.setItem("speed-counter-conta", JSON.stringify(conta));
+      mensagem.textContent = "Conta salva neste navegador.";
+    } catch {
+      mensagem.textContent = "Não foi possível salvar a conta neste navegador.";
+    }
+  });
+
+  function carregarConta() {
+  try {
+    const textoSalvo = localStorage.getItem("speed-counter-conta");
+
+    if (textoSalvo === null) {
+      return;
+    }
+
+    const conta = JSON.parse(textoSalvo);
+    const centavos = conta.saldoInicialCentavos;
+    const digitos = String(Math.abs(centavos)).padStart(3, "0");
+    const sinal = centavos < 0 ? "-" : "";
+    const saldo = sinal + digitos.slice(0, -2) + "," + digitos.slice(-2);
+
+    formulario.elements.namedItem("nome-conta").value = conta.nome;
+    formulario.elements.namedItem("tipo-conta").value = conta.tipo;
+    formulario.elements.namedItem("saldo-inicial").value = saldo;
+
+    mensagem.textContent = "Conta carregada.";
+  } catch {
+    mensagem.textContent = "Não foi possível carregar a conta salva.";
+  }
+}
+
+carregarConta();
+
+</script>
+
+</body>
+
+</html>
