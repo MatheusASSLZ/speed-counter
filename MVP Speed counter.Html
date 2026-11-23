@@ -165,6 +165,59 @@
 
 carregarConta();
 
+const formLancamento = document.getElementById("form-lancamento");
+const mensagemLancamento = document.getElementById("mensagem-lancamento");
+
+formLancamento.addEventListener("submit", function (evento) {
+  evento.preventDefault();
+
+  const campos = new FormData(formLancamento);
+  const tipo = campos.get("tipo");
+  const descricao = campos.get("descricao").trim();
+  const categoria = tipo === "despesa" ? campos.get("categoria") : "";
+
+  if (tipo === "despesa" && (!descricao || !categoria)) {
+    mensagemLancamento.textContent = "Informe a descrição e a categoria da despesa.";
+    return;
+  }
+
+  const partes = campos.get("valor").trim().match(/^(\d+)(?:[,.](\d{1,2}))?$/);
+
+  if (!partes) {
+    mensagemLancamento.textContent = "Informe um valor válido, como 32,75.";
+    return;
+  }
+
+  const [, reais, decimais = ""] = partes;
+  const valorCentavos = Number(reais + decimais.padEnd(2, "0"));
+
+  if (!Number.isSafeInteger(valorCentavos) || valorCentavos < 1) {
+    mensagemLancamento.textContent = "Informe um valor a partir de R$ 0,01.";
+    return;
+  }
+
+  const lancamento = {
+    tipo,
+    descricao,
+    categoria,
+    valorCentavos,
+    data: campos.get("data"),
+    situacao: campos.get("situacao")
+  };
+
+  try {
+    const textoSalvo = localStorage.getItem("speed-counter-lancamentos");
+    const lancamentos = JSON.parse(textoSalvo ?? "[]");
+    lancamentos.push(lancamento);
+
+    localStorage.setItem("speed-counter-lancamentos", JSON.stringify(lancamentos));
+    formLancamento.reset();
+    mensagemLancamento.textContent = "Lançamento salvo neste navegador.";
+  } catch {
+    mensagemLancamento.textContent = "Não foi possível salvar o lançamento.";
+  }
+});
+
 </script>
 
 </body>
